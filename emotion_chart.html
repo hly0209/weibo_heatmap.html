@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<title>情感分布统计</title>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+<style>
+  *{ margin:0; padding:0; box-sizing:border-box; }
+  body{ background:#f5f6fa; font-family:"PingFang SC","Microsoft YaHei",sans-serif; color:#1a1a2e; }
+  header{ padding:28px 40px 16px; }
+  header h1{ font-size:22px; font-weight:700; }
+  header p{ font-size:13px; color:#888; margin-top:5px; }
+
+  .cards{ display:flex; gap:14px; padding:0 40px 20px; flex-wrap:wrap; }
+  .card{ background:#fff; border-radius:12px; padding:16px 22px;
+          flex:1; min-width:140px; box-shadow:0 1px 6px rgba(0,0,0,.07); }
+  .card .label{ font-size:12px; color:#aaa; margin-bottom:6px; }
+  .card .val{ font-size:26px; font-weight:700; }
+
+  .section-label{ padding:8px 40px; font-size:12px; font-weight:600;
+                   color:#aaa; letter-spacing:1px; text-transform:uppercase; }
+
+  .charts-row{ display:flex; gap:20px; padding:0 40px; }
+  .chart-box{ background:#fff; border-radius:14px; flex:1;
+               box-shadow:0 1px 6px rgba(0,0,0,.07); padding:16px 8px; }
+  .chart-title{ font-size:13px; font-weight:600; color:#555;
+                 padding:0 16px 10px; }
+  #chart-pie{ width:100%; height:360px; }
+  #chart-bar{ width:100%; height:360px; }
+
+  .legend-row{ display:flex; flex-wrap:wrap; gap:8px 20px;
+                padding:12px 40px 0; }
+  .leg-item{ display:flex; align-items:center; gap:6px;
+              font-size:12px; color:#555; }
+  .leg-dot{ width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+
+  .score-row{ display:flex; flex-wrap:wrap; gap:10px; padding:8px 40px 30px; }
+  .scard{ background:#fff; border-radius:10px; padding:12px 18px;
+           box-shadow:0 1px 4px rgba(0,0,0,.06); min-width:110px; }
+  .scard-label{ font-size:11px; color:#aaa; margin-bottom:4px; }
+  .scard-val{ font-size:20px; font-weight:700; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>情感分布统计</h1>
+  <p>共 10,528 条微博 · 8 种情绪类别</p>
+</header>
+
+<div class="cards">
+  <div class="card">
+    <div class="label">总样本量</div>
+    <div class="val">10,528</div>
+  </div>
+  <div class="card">
+    <div class="label">情绪类别数</div>
+    <div class="val">8</div>
+  </div>
+  <div class="card">
+    <div class="label">最多情绪</div>
+    <div class="val" style="font-size:18px;color:#e53935">愤怒</div>
+  </div>
+  <div class="card">
+    <div class="label">占比</div>
+    <div class="val" style="font-size:22px;color:#e53935">42.5%</div>
+  </div>
+</div>
+
+<div class="section-label">情绪分布</div>
+
+<div class="charts-row">
+  <div class="chart-box">
+    <div class="chart-title">占比分布</div>
+    <div id="chart-pie"></div>
+  </div>
+  <div class="chart-box">
+    <div class="chart-title">数量对比</div>
+    <div id="chart-bar"></div>
+  </div>
+</div>
+
+<div class="legend-row" id="legend"></div>
+
+
+    <div class="section-label">平均情感得分</div>
+    <div class="score-row">
+          <div class="scard" style="border-left:3px solid #e53935">
+            <div class="scard-label">愤怒</div>
+            <div class="scard-val" style="color:#e53935">0.891</div>
+          </div>
+          <div class="scard" style="border-left:3px solid #5c6bc0">
+            <div class="scard-label">悲伤</div>
+            <div class="scard-val" style="color:#5c6bc0">0.815</div>
+          </div>
+          <div class="scard" style="border-left:3px solid #00acc1">
+            <div class="scard-label">惊讶</div>
+            <div class="scard-val" style="color:#00acc1">0.823</div>
+          </div>
+          <div class="scard" style="border-left:3px solid #6d4c41">
+            <div class="scard-label">厌恶</div>
+            <div class="scard-val" style="color:#6d4c41">0.857</div>
+          </div>
+          <div class="scard" style="border-left:3px solid #5470c6">
+            <div class="scard-label">期待</div>
+            <div class="scard-val" style="color:#5470c6">0.774</div>
+          </div>
+          <div class="scard" style="border-left:3px solid #91cc75">
+            <div class="scard-label">信任</div>
+            <div class="scard-val" style="color:#91cc75">0.805</div>
+          </div>
+          <div class="scard" style="border-left:3px solid #f9a825">
+            <div class="scard-label">喜悦</div>
+            <div class="scard-val" style="color:#f9a825">0.834</div>
+          </div>
+          <div class="scard" style="border-left:3px solid #7b1fa2">
+            <div class="scard-label">恐惧</div>
+            <div class="scard-val" style="color:#7b1fa2">0.795</div>
+          </div></div>
+
+<script>
+const labels     = ["愤怒", "悲伤", "惊讶", "厌恶", "期待", "信任", "喜悦", "恐惧"];
+const counts     = [4472, 1514, 1384, 1318, 739, 616, 419, 66];
+const pcts       = [42.5, 14.4, 13.1, 12.5, 7.0, 5.9, 4.0, 0.6];
+const barColors  = ["#e53935", "#5c6bc0", "#00acc1", "#6d4c41", "#5470c6", "#91cc75", "#f9a825", "#7b1fa2"];
+const pieData    = [{"name": "愤怒", "value": 4472, "itemStyle": {"color": "#e53935"}}, {"name": "悲伤", "value": 1514, "itemStyle": {"color": "#5c6bc0"}}, {"name": "惊讶", "value": 1384, "itemStyle": {"color": "#00acc1"}}, {"name": "厌恶", "value": 1318, "itemStyle": {"color": "#6d4c41"}}, {"name": "期待", "value": 739, "itemStyle": {"color": "#5470c6"}}, {"name": "信任", "value": 616, "itemStyle": {"color": "#91cc75"}}, {"name": "喜悦", "value": 419, "itemStyle": {"color": "#f9a825"}}, {"name": "恐惧", "value": 66, "itemStyle": {"color": "#7b1fa2"}}];
+const total      = 10528;
+
+// ── 图例 ──
+const legend = document.getElementById('legend');
+labels.forEach((lbl, i) => {
+  legend.innerHTML += `<div class="leg-item">
+    <div class="leg-dot" style="background:${barColors[i]}"></div>
+    ${lbl} ${pcts[i]}% (${counts[i].toLocaleString()})
+  </div>`;
+});
+
+// ── 环形图 ──
+const pieChart = echarts.init(document.getElementById('chart-pie'));
+pieChart.setOption({
+  tooltip: {
+    trigger: 'item',
+    formatter: p => `${p.name}<br>数量：<b>${p.value.toLocaleString()}</b><br>占比：<b>${p.percent}%</b>`
+  },
+  legend: { show: false },
+  series: [{
+    type: 'pie',
+    radius: ['42%', '70%'],
+    center: ['50%', '52%'],
+    padAngle: 2,
+    itemStyle: { borderRadius: 6 },
+    label: {
+      show: true,
+      formatter: p => p.percent >= 5 ? `${p.name}\n${p.percent}%` : '',
+      fontSize: 12,
+      lineHeight: 18,
+    },
+    labelLine: { length: 12, length2: 8 },
+    emphasis: {
+      scale: true, scaleSize: 8,
+      label: { fontSize: 14, fontWeight: 'bold' }
+    },
+    data: pieData
+  },
+  {
+    type: 'pie',
+    radius: ['0%', '30%'],
+    center: ['50%', '52%'],
+    silent: true,
+    label: { show: true, position: 'center',
+               formatter: () => `10,528\n总计`,
+               fontSize: 15, fontWeight: 700, lineHeight: 22, color: '#333' },
+    data: [{ value: 1, itemStyle: { color: '#f5f6fa' }, label: { show: true } }]
+  }]
+});
+
+// ── 柱状图 ──
+const barChart = echarts.init(document.getElementById('chart-bar'));
+barChart.setOption({
+  tooltip: {
+    trigger: 'axis',
+    axisPointer: { type: 'shadow' },
+    formatter: p => `${p[0].name}<br>数量：<b>${p[0].value.toLocaleString()}</b>（${pcts[p[0].dataIndex]}%）`
+  },
+  grid: { left: 60, right: 30, top: 20, bottom: 60 },
+  xAxis: {
+    type: 'category',
+    data: labels,
+    axisLabel: { fontSize: 11, interval: 0, rotate: labels.length > 5 ? 30 : 0 },
+    axisLine: { lineStyle: { color: '#e0e0e0' } },
+    axisTick: { show: false }
+  },
+  yAxis: {
+    type: 'value',
+    axisLabel: { fontSize: 10, color: '#bbb' },
+    splitLine: { lineStyle: { color: '#f0f0f0' } }
+  },
+  series: [{
+    type: 'bar',
+    data: counts.map((v, i) => ({
+      value: v,
+      itemStyle: { color: barColors[i], borderRadius: [6, 6, 0, 0] }
+    })),
+    barMaxWidth: 52,
+    label: {
+      show: true,
+      position: 'top',
+      fontSize: 11,
+      color: '#555',
+      formatter: p => `${p.value.toLocaleString()}\n${pcts[p.dataIndex]}%`
+    },
+    emphasis: { itemStyle: { opacity: 0.85 } }
+  }]
+});
+
+window.addEventListener('resize', () => {
+  pieChart.resize();
+  barChart.resize();
+});
+</script>
+</body>
+</html>
